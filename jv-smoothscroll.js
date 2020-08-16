@@ -20,7 +20,6 @@
 		'offset': 0
 	};
 	var hash, links, headerHeight, options, containerElem;
-	var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 
 	/**
 	 * Easing Functions
@@ -111,33 +110,12 @@
 		return location;
 	};
 
-	var addListeners = function ( link ) {
-		// Add event listener to prevent default functionality
-		link.addEventListener( 'click', function ( e ) {
-			// JVSmoothScroll.scrollTo( top );
-
-			var target = anchorLinks.find( function ( anchor ) {
-				if ( anchor.hash === link.hash ) {
-					return anchor.hash
-				}
-			} );
-
-			setTimeout( function() {
-				scrollStart( target );
-			}, 100 )
-
-			scrollStop();
-
-			e.preventDefault();
-		} );
-	};
-
 	var getAnchors = function ( links ) {
 		for (let i = 0; i < links.length; i++) {
 			const link = links[i];
 			// If the link points to the same base page
 			if ( location.pathname.replace( /^\//, '' ) == link.pathname.replace( /^\//, '' ) && location.hostname == link.hostname ) {
-				var anchorTop = getTargetLocation( link.hash );
+				var anchorTop = getEndLocation( link.hash );
 				var distance = getDistance( link.hash );
 
 				// Add each link's { hash, top } values to anchorLinks[]
@@ -150,14 +128,22 @@
 		}
 	}
 
-	/**
-	 * Get location of target for clicked element
-	 * @param {Sring|HTMLElement} target The hash string or HTML Element of target element
-	 */
-	var getTargetLocation = function ( target ) {
-		var targetElem = typeof target === 'string' ? getElem( target ) : getElem( target.hash );
-		return !!parseInt( targetElem.offsetTop ) ? targetElem.offsetTop : ( !!parseInt( targetElem.scrollTop ) ? targetElem.scrollTop : 0 )
-	}
+	var addListeners = function ( link ) {
+		// Add event listener to prevent default functionality
+		link.addEventListener( 'click', function ( e ) {
+			e.preventDefault();
+
+			var target = anchorLinks.find( function ( anchor ) {
+				if ( anchor.hash === link.hash ) {
+					return anchor.hash
+				}
+			} );
+
+			smoothScrollTo( document.querySelector( 'html' ).scrollTop, getEndLocation( target ), options.animation.duration ); // starting location, end
+
+			scrollStop();
+		} );
+	};
 
 	/**
 	 * Get distance to clicked anchor
@@ -169,36 +155,6 @@
 
 		return anchorLocation - currentLocation;
 	}
-
-	/**
-	 * Get top position of container
-	 * @param  {Window|HTMLElement} container
-	 * @return {number}
-	 */
-	var getTop = function ( container ) {
-		if ( container instanceof HTMLElement ) {
-			return container.scrollTop;
-		}
-		return container.pageYOffset;
-	};
-
-	/**
-	 * Scroll to target adjustments
-	 * @param {String} hash The anchor hash
-	 */
-	var scrollStart = function ( hash ) {
-		var distance = getDistance( hash );
-
-		if ( 'scrollBehavior' in document.documentElement.style ) { //Checks if browser supports scroll function
-			window.scrollBy( {
-				top: distance,
-				behavior: 'smooth',
-				block: 'start'
-			} );
-		} else {
-			smoothScrollTo( document.querySelector( 'html' ).scrollTop, getEndLocation( hash ), options.animation.duration ); //polyfill below
-		}
-	};
 
 	var scrollStop = function () {
 		anchorLinks = [];
@@ -218,7 +174,7 @@
 
 		var timer = window.setInterval( function () {
 			var time = new Date().getTime() - startTime,
-				newY = easeInOutQuart( time, startY, distanceY, duration );
+				newY = easeInOut( time, startY, distanceY, duration );
 			if ( time >= duration ) {
 				window.clearInterval( timer );
 			}
@@ -268,14 +224,14 @@
 		containerElem = typeof options.container === HTMLElement ? options.container : getElem( options.container )
 
 		var distance = typeof target === 'number' ? target : target.offsetTop;
-		const from = getTop( containerElem );
+		const from = getEndLocation( containerElem );
 		var startTime = null;
 		var lastYOffset;
 		distance -= options.animation.tolerance;
 
 		//.prototype rAF loop
 		const loop = function( currentTime ) {
-			const currentYOffset = getTop( containerElem );
+			const currentYOffset = getEndLocation( containerElem );
 
 			if ( !startTime ) {
 				// Starts time from 1; subtracted 1 from current time to start at 0
