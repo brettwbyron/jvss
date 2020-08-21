@@ -17,19 +17,19 @@ or include it in your markup with:
 <script src="//careers.jobvite.com/common/js/jv-smoothscroll/jv-smoothscroll.js">
 ```
 
-### 2. Initialize the smooth scroll with your [settings](#custom-settings)
+### 2. Initialize the smooth scroll with your [settings](#settings)
 ```js
 var jvSmoothScroll = new JVSmoothScroll({
-	'selector': 'a[href*="#"]:not([href="#"])',
-	'animation': {
-		'duration': 999,
-		'easing': 'easeInOut'
+	selector: 'a[href*="#"]:not([href="#"])',
+	animation: {
+		duration: 999,
+		easing: 'easeInOut'
 	},
-	'header': {
-		'fixed': true,
-		'height': 100
+	header: {
+		fixed: true,
+		height: 100
 	},
-	'offset': 15
+	offset: 15
 });
 ```
 or simply
@@ -40,20 +40,20 @@ var jvSmoothScroll = new JVSmoothScroll();
 ## Settings
 ```js
 defaultOptions = {
-	'container': 'html',
-	'selector': 'a[href*="#"]:not([href="#"])',
-	'animation': {
+	container: 'html',
+	selector: 'a[href*="#"]:not([href="#"])',
+	animation: {
 		tolerance: 0,
 		duration: 800,
 		easing: 'easeInOut',
 		callback: function () {},
 	},
-	'header': {
-		'fixed': false,
-		'height': 0,
-		'selector': 'header',
-		'offset': 0
+	header: {
+		fixed: false,
+		height: 0,
+		selector: 'header',
+		offset: 0
 	},
-	'offset': 0
+	offset: 0
 }
 ```

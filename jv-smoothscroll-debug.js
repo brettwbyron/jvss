@@ -1,30 +1,6 @@
 ( function () {
 	'use strict';
 
-	// Array.prototype.find polyfill
-	if ( !Array.prototype.find ) {
-		Array.prototype.find = function ( predicate ) {
-			if ( this == null ) {
-				throw new TypeError( 'Array.prototype.find called on null or undefined' );
-			}
-			if ( typeof predicate !== 'function' ) {
-				throw new TypeError( 'predicate must be a function' );
-			}
-			var list = Object( this );
-			var length = list.length >>> 0;
-			var thisArg = arguments[ 1 ];
-			var value;
-
-			for ( var i = 0; i < length; i++ ) {
-				value = list[ i ];
-				if ( predicate.call( thisArg, value, i, list ) ) {
-					return value;
-				}
-			}
-			return undefined;
-		};
-	}
-
 	var anchorLinks = [];
 	var defaultOptions = {
 		container: 'html',
@@ -51,11 +27,14 @@
 			window[ browser[ x ] + 'CancelRequestAnimationFrame' ];
 	}
 
-	// * Easing Functions
-	// t - current time
-	// b - start value
-	// c - change in value
-	// d - duration
+	/**
+	 * Easing Functions
+	 * @param  {number} t - current time
+	 * @param  {number} b - start value
+	 * @param  {number} c - change in value
+	 * @param  {number} d - duration
+	 * @return {number} - calculated value
+	 */
 	var easeIn = function ( t, b, c, d ) {
 		return c * ( t /= d ) * t * t + b;
 	}
@@ -70,7 +49,17 @@
 	}
 	var easingFunctions = { easeIn: easeIn, easeOut: easeOut, easeInOut: easeInOut };
 
+	/**
+	 * Merge two objects
+	 *
+	 * @param  {object} obj1
+	 * @param  {object} obj2
+	 * @return {object} merged object
+	 */
 	function merge( obj1, obj2 ) {
+		console.log( 'v-------- merge( obj1, obj2 ) -------v' );
+		console.log( '\t -> obj1:', {obj1} );
+		console.log( '\t -> obj2:', {obj2} );
 		const obj3 = {};
 		Object.keys( obj1 ).forEach( function( propertyName ) {
 			obj3[ propertyName ] = obj1[ propertyName ];
@@ -79,30 +68,65 @@
 		Object.keys( obj2 ).forEach( function( propertyName ) {
 			obj3[ propertyName ] = obj2[ propertyName ];
 		} );
+
+		console.log( '\t -> return', obj3 );
+		console.log( '^-------- merge( obj1, obj2 ) -------^' );
 		return obj3;
 	};
 
+	/**
+	 * Get the height of an element.
+	 * @param  {Node} elem The element to get the height of
+	 * @return {Number}    The element's height in pixels
+	 */
 	var getHeight = function ( elem ) {
+		console.log( 'v-------- getHeight( elem ) ---------v' );
+		console.log( '\t -> elem:', elem );
+		console.log( '\t -> return', parseInt( window.getComputedStyle( elem ).height ) );
+		console.log( '^-------- getHeight( elem ) ---------^' );
 		return parseInt( window.getComputedStyle( elem ).height );
 	};
 
+	/**
+	 * Shortcut for document.getElement[...] methods and document.querySelector for complex selectors
+	 * @param  {String}  selector
+	 * @return {Element} first instance
+	 */
 	var getElem = function ( selector ) {
+		console.log( 'v------- getElem( selector ) --------v' );
+		console.log( '\t -> selector', selector );
 		if ( selector === undefined ) return;
 		else if ( typeof selector === HTMLElement ) return selector;
 
 		if ( selector.lastIndexOf( '.' ) > 0 || selector.lastIndexOf( '#' ) > 0 ) {
+			console.log( '\t -> return', document.querySelector( selector ) );
+			console.log( '^------- getElem( selector ) --------^' );
 			return document.querySelector( selector )
 		} else if ( selector.lastIndexOf('.') === 0 && selector.lastIndexOf( '#' ) < 0 ) {
+			console.log( '\t -> return', document.getElementsByClassName( selector.substr( 1 ) )[0] );
+			console.log( '^------- getElem( selector ) --------^' );
 			return document.getElementsByClassName( selector.substr( 1 ) )[0]
 		} else if ( selector.lastIndexOf( '#' ) === 0 && selector.lastIndexOf( '.' ) < 0 ) {
+			console.log( '\t -> return', document.getElementById( selector.substr( 1 ) ) );
+			console.log( '^------- getElem( selector ) --------^' );
 			return document.getElementById( selector.substr( 1 ) )
 		} else if ( selector.lastIndexOf( '.' ) < 0 && selector.lastIndexOf( '#' ) < 0 ) {
+			console.log( '\t -> return', document.getElementsByTagName( selector )[0] );
+			console.log( '^------- getElem( selector ) --------^' );
 			return document.getElementsByTagName( selector )[0]
 		}
 	};
 
+	/**
+	 * Calculate how far to scroll
+	 * @param {Element} anchor       The anchor element to scroll to
+	 * @returns {Number}
+	 */
 	var getEndLocation = function ( anchor ) {
+		console.log( 'v----- getEndLocation( anchor ) -----v' );
+		console.log( '\t -> anchor:', anchor );
 		var anchorElem = typeof anchor === 'string' ? getElem( anchor ) : getElem( anchor.hash );
+		console.log( '--- anchorElem:', anchorElem );
 		var location = 0;
 		if ( anchorElem && anchorElem.offsetParent ) {
 			do {
@@ -111,17 +135,33 @@
 			} while ( anchorElem );
 		}
 		location = Math.max( location - options.header.height - options.offset, 0 );
+		console.log( '\t -> return', location );
+		console.log( '^----- getEndLocation( anchor ) -----^' );
 		return location;
 	};
 
+	/**
+	 * Set DOM element info for each anchor link target
+	 * @param {Array} links		array of links with hashes
+	 */
 	var getAnchors = function ( links ) {
+		console.log( 'v------- getAnchors( links ) --------v' );
+		console.log( '\t -> links:', { links }, '---' );
+
 		for (let i = 0; i < links.length; i++) {
 			const link = links[i];
 
+			console.log( '- for (let ', i ,' = 0; ', i ,' <', links.length, '; ', i ,'++) {' );
+			console.log( '-- const link =', { link }, '\n...}' );
+			console.log( '-- if ( ', location.pathname.replace( /^\//, '' ), ' == ', link.pathname.replace( /^\//, "" ), ' && ', location.hostname, ' == ', link.hostname, ' ) {' );
 			// If the link points to the same base page
 			if ( location.pathname.replace( /^\//, '' ) == link.pathname.replace( /^\//, '' ) && location.hostname == link.hostname ) {
+				console.log( '--- (hash ===', link.hash ? link.hash : '""', ')' );
 				var anchorTop = getEndLocation( link.hash );
+				console.log( '--- var anchorTop = getEndLocation(', link.hash ,') === ', anchorTop );
+
 				var distance = getDistance( link.hash );
+				console.log( '--- var distance = getDistance(', link.hash ,') === ', distance );
 
 				// Add each link's { hash, top } values to anchorLinks[]
 				anchorLinks.push( {
@@ -129,36 +169,70 @@
 					top: anchorTop ? anchorTop : 0,
 					distance: distance ? distance : 0
 				} );
+				console.log( '--- anchorLinks.push({\n\t---- hash:', link.hash ? link.hash : '' ,'\n\t---- top:', anchorTop ? anchorTop : 0 ,'\n\t---- distance:', distance ? distance : 0, '\n--- })' );
+
 				addListeners( link );
 			}
 		}
+
+
+		console.log( '\t -> anchorLinks:', { anchorLinks }, '---' );
+		console.log( '^------- getAnchors( links ) --------^' );
 	}
 
 	var addListeners = function ( link ) {
+		console.log( 'v------- addListeners( link ) -------v' );
+		console.log( '\t -> link:', link );
+
+
+
 		// Add event listener to prevent default functionality
 		link.addEventListener( 'click', function ( e ) {
 			var target = anchorLinks.find( function ( anchor ) {
 				if ( anchor.hash === link.hash ) {
+					console.log( '-- {in .find()} anchor:', anchor );
 					return anchor.hash
 				}
 			} ),
 				elem = getElem( target.hash );
 
+			console.log( '\t -> e:', e );
+			console.log( '\t -> link:', link );
+			console.log( '\t -> target:', target );
+			console.log( '\t -> elem:', elem );
+			console.log( '^------- addListeners( link ) -------^' );
 			elem.focus();
 			e.preventDefault();
 			scrollStart( target.hash );
 		} );
 	};
 
+	/**
+	 * Get distance to clicked anchor
+	 * @param {String} hash the target hash value
+	 */
 	var getDistance = function ( hash ) {
-		var currentLocation = document.querySelector('html').scrollTop, // get current location
-			anchorLocation = getEndLocation( hash );
+		console.log( 'v------- getDistance( hash ) --------v' );
+		console.log( '\t -> hash:', hash );
+		var currentLocation = document.querySelector('html').scrollTop; // get current location
+		console.log( '- var currentLocation =', currentLocation );
+		var anchorLocation = getEndLocation( hash );
+		console.log( '- var anchorLocation = getEndLocation(', hash, ') =', anchorLocation );
 
+		console.log( '\t -> return anchorLocation - currentLocation ===', anchorLocation - currentLocation );
+		console.log( '^------- getDistance( hash ) --------^' );
 		return anchorLocation - currentLocation;
 	}
 
+	/**
+	 * Scroll to target adjustments
+	 * @param {String} hash The anchor hash
+	 */
 	var scrollStart = function ( hash ) {
+		console.log( 'v------- scrollStart( hash ) --------v' );
+		console.log( '\t -> hash:', hash );
 		var distance = getDistance( hash );
+		console.log( 'var distance = ', getDistance( hash ) );
 
 		if ( 'scrollBehavior' in document.documentElement.style ) { //Checks if browser supports scroll function
 			window.scrollBy( {
@@ -171,10 +245,13 @@
 		}
 
 		scrollStop();
+		console.log( '^------- scrollStart( hash ) --------^' );
 	};
 
 	// * JVSmoothScroll ScrollTo Method
 	var smoothScrollTo = function ( endY, duration, startY ) {
+		console.log( 'v---- smoothScrollTo( end, dur, str ) ----v' );
+		console.log( '\t -> typeof end ===', typeof endY );
 		if ( typeof endY != 'number' ) {
 			endY = getEndLocation( endY );
 		}
@@ -182,7 +259,9 @@
 			distanceY = endY - startY,
 			startTime = new Date().getTime(),
 			duration = duration ? duration : options.animation.duration;
-
+		console.log( '- end:', endY );
+		console.log( '- duration:', duration );
+		console.log( '- start:', startY );
 		// Easing function
 		var timer = window.setInterval( function () {
 			var time = new Date().getTime() - startTime,
@@ -192,16 +271,24 @@
 			}
 			window.scrollTo( 0, newY );
 		}, 1000 / 60 ); // 60 fps
+		console.log( '^---- smoothScrollTo( end, dur, str ) ----^' );
 	};
 
 	var scrollStop = function () {
+		console.log( '---vvv---vvv scrollStop() vvv---vvv--' );
 		options.animation.callback();
 		anchorLinks = [];
 		getAnchors( links );
+		console.log( '---^^^---^^^ scrollStop() ^^^---^^^--' );
 	};
 
-	// * JVSmoothScroll constructor * //
+	/**
+	 * JVSmoothScroll constructor
+	 * @param  {object} initialized options
+	 */
 	function JVSmoothScroll( opts ) {
+		console.log( 'v------ JVSmoothScroll( opts ) ------v' );
+		console.log( 'init opts:', {opts} );
 
 		opts = !!opts ? opts : defaultOptions
 		// Overwrite defaults
@@ -218,19 +305,24 @@
 
 		options.header = merge( opts.header, header );
 
+		console.log( 'final opts:', {options} );
 
 		links = document.querySelectorAll( '' + options.container + ' ' + options.selector );
 
 		if ( !!links ) getAnchors( links );
+		console.log( '^------ JVSmoothScroll( opts ) ------^' );
 	}
 
-	// * On Window Load
 	// When the page renders, go to hash target
 	window.onload = function () {
+		console.log( 'v--------- window.onload() ----------v' );
 		var hash = location.hash ? location.hash.replace( '/', '' ) : null;
+		console.log( 'var hash = location.hash ? location.hash.replace( \'/\', \'\' ) : null;' );
+		console.log( 'var hash = ',location.hash,' ? ', location.hash.replace( '/', '' ),' : null ===', hash );
 		var anchor = anchorLinks.find( function ( link ) {
 			link.hash === hash
 		} );
+		console.log( 'var anchor = anchorLinks.find(',hash,') => ', anchor );
 		if ( anchor ) {
 			// Check for special occasions noted by team
 			anchor.hash.includes( '#!' ) ? anchor.hash = anchor.hash.replace( '#!', '' ) : anchor.hash;
@@ -256,6 +348,7 @@
 				} );
 			}
 		}
+		console.log( '^---------- window.onload() -----------^' );
 	};
 
 	window.JVSmoothScroll = JVSmoothScroll
