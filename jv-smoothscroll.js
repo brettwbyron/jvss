@@ -72,6 +72,8 @@
 
 	function merge( obj1, obj2 ) {
 		const obj3 = {};
+		obj1 = !!obj1 ? obj1 : {};
+		obj2 = !!obj2 ? obj2 : {};
 		Object.keys( obj1 ).forEach( function( propertyName ) {
 			obj3[ propertyName ] = obj1[ propertyName ];
 		} );
