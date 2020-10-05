@@ -166,6 +166,8 @@
 
 		for (let i = 0; i < links.length; i++) {
 			const link = links[i];
+			const anchor = getElem( link.hash );
+			if (!!anchor) anchor.classList.add('jvss-anchor');
 
 			console.log( '- for (let ', i ,' = 0; ', i ,' <', links.length, '; ', i ,'++) {' );
 			console.log( '-- const link =', { link }, '\n...}' );
@@ -199,6 +201,7 @@
 	var addListeners = function ( link ) {
 		console.log( 'v------- addListeners( link ) -------v' );
 		console.log( '\t -> link:', link );
+		link.classList.add( 'jvss-anchor-link' );
 
 
 
@@ -211,7 +214,6 @@
 				}
 			} ),
 				elem = getElem( target.hash );
-				elem.classList.add( 'jvss-anchor' )
 
 			console.log( '\t -> e:', e );
 			console.log( '\t -> link:', link );
@@ -325,7 +327,6 @@
 		console.log( 'final opts:', {options} );
 
 		links = document.querySelectorAll( '' + options.container + ' ' + options.selector );
-		links.classList.add( 'jvss-link' );
 
 		if ( !!links ) getAnchors( links );
 		console.log( '^------ JVSmoothScroll( opts ) ------^' );

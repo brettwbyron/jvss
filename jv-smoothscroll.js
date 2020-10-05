@@ -90,6 +90,7 @@
 
 	var getElem = function ( selector ) {
 		if ( selector === undefined ) return;
+		if ( selector.includes('##') ) return;
 		else if ( typeof selector === HTMLElement ) return selector;
 
 		if ( selector.lastIndexOf( '.' ) > 0 || selector.lastIndexOf( '#' ) > 0 ) {
@@ -119,6 +120,8 @@
 	var getAnchors = function ( links ) {
 		for (let i = 0; i < links.length; i++) {
 			const link = links[i];
+			const anchor = getElem( link.hash );
+			if ( !!anchor ) anchor.classList.add( 'jvss-anchor' );
 
 			// If the link points to the same base page
 			if ( location.pathname.replace( /^\//, '' ) == link.pathname.replace( /^\//, '' ) && location.hostname == link.hostname ) {
@@ -137,6 +140,8 @@
 	}
 
 	var addListeners = function ( link ) {
+		link.classList.add( 'jvss-anchor-link' );
+
 		// Add event listener to prevent default functionality
 		link.addEventListener( 'click', function ( e ) {
 			var target = anchorLinks.find( function ( anchor ) {
@@ -145,7 +150,6 @@
 				}
 			} ),
 				elem = getElem( target.hash );
-				elem.classList.add('jvss-anchor')
 
 			elem.focus();
 			e.preventDefault();
@@ -163,15 +167,15 @@
 	var scrollStart = function ( hash ) {
 		var distance = getDistance( hash );
 
-		if ( 'scrollBehavior' in document.documentElement.style ) { //Checks if browser supports scroll function
-			window.scrollBy( {
-				top: distance,
-				behavior: 'smooth',
-				block: 'start'
-			} );
-		} else {
+		// if ( 'scrollBehavior' in document.documentElement.style ) { //Checks if browser supports scroll function
+		// 	window.scrollBy( {
+		// 		top: distance,
+		// 		behavior: 'smooth',
+		// 		block: 'start'
+		// 	} );
+		// } else {
 			smoothScrollTo( getEndLocation( hash ), options.animation.duration, document.querySelector( 'html' ).scrollTop ); //polyfill below
-		}
+		// }
 
 		scrollStop();
 	};
@@ -223,7 +227,6 @@
 
 
 		links = document.querySelectorAll( '' + options.container + ' ' + options.selector );
-		links.classList.add('jvss-link');
 
 		if ( !!links ) getAnchors( links );
 	}
