@@ -1,6 +1,30 @@
 ( function () {
 	'use strict';
 
+	// Array.prototype.find polyfill
+	if ( !Array.prototype.find ) {
+		Array.prototype.find = function ( predicate ) {
+			if ( this == null ) {
+				throw new TypeError( 'Array.prototype.find called on null or undefined' );
+			}
+			if ( typeof predicate !== 'function' ) {
+				throw new TypeError( 'predicate must be a function' );
+			}
+			var list = Object( this );
+			var length = list.length >>> 0;
+			var thisArg = arguments[ 1 ];
+			var value;
+
+			for ( var i = 0; i < length; i++ ) {
+				value = list[ i ];
+				if ( predicate.call( thisArg, value, i, list ) ) {
+					return value;
+				}
+			}
+			return undefined;
+		};
+	}
+
 	var anchorLinks = [];
 	var defaultOptions = {
 		container: 'html',
@@ -27,14 +51,11 @@
 			window[ browser[ x ] + 'CancelRequestAnimationFrame' ];
 	}
 
-	/**
-	 * Easing Functions
-	 * @param  {number} t - current time
-	 * @param  {number} b - start value
-	 * @param  {number} c - change in value
-	 * @param  {number} d - duration
-	 * @return {number} - calculated value
-	 */
+	// * Easing Functions
+	// t - current time
+	// b - start value
+	// c - change in value
+	// d - duration
 	var easeIn = function ( t, b, c, d ) {
 		return c * ( t /= d ) * t * t + b;
 	}
@@ -49,18 +70,13 @@
 	}
 	var easingFunctions = { easeIn: easeIn, easeOut: easeOut, easeInOut: easeInOut };
 
-	/**
-	 * Merge two objects
-	 *
-	 * @param  {object} obj1
-	 * @param  {object} obj2
-	 * @return {object} merged object
-	 */
 	function merge( obj1, obj2 ) {
 		console.log( 'v-------- merge( obj1, obj2 ) -------v' );
 		console.log( '\t -> obj1:', {obj1} );
 		console.log( '\t -> obj2:', {obj2} );
 		const obj3 = {};
+		obj1 = !!obj1 ? obj1 : {};
+		obj2 = !!obj2 ? obj2 : {};
 		Object.keys( obj1 ).forEach( function( propertyName ) {
 			obj3[ propertyName ] = obj1[ propertyName ];
 		} );
@@ -195,6 +211,7 @@
 				}
 			} ),
 				elem = getElem( target.hash );
+				elem.classList.add( 'jvss-anchor' )
 
 			console.log( '\t -> e:', e );
 			console.log( '\t -> link:', link );
@@ -308,6 +325,7 @@
 		console.log( 'final opts:', {options} );
 
 		links = document.querySelectorAll( '' + options.container + ' ' + options.selector );
+		links.classList.add( 'jvss-link' );
 
 		if ( !!links ) getAnchors( links );
 		console.log( '^------ JVSmoothScroll( opts ) ------^' );

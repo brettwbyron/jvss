@@ -145,6 +145,7 @@
 				}
 			} ),
 				elem = getElem( target.hash );
+				elem.classList.add('jvss-anchor')
 
 			elem.focus();
 			e.preventDefault();
@@ -222,6 +223,7 @@
 
 
 		links = document.querySelectorAll( '' + options.container + ' ' + options.selector );
+		links.classList.add('jvss-link');
 
 		if ( !!links ) getAnchors( links );
 	}
