@@ -29,6 +29,7 @@
 	var defaultOptions = {
 		container: 'html',
 		selector: 'a[href*="#"]:not([href="#"])',
+		backToTop: true,
 		animation: {
 			tolerance: 0,
 			duration: 800,
@@ -90,22 +91,25 @@
 
 	var getElem = function ( selector ) {
 		if ( selector === undefined ) return;
-		if ( selector.includes('##') ) return;
-		else if ( typeof selector === HTMLElement ) return selector;
+		// if ( selector.includes('##') ) return;
+		if ( typeof selector === HTMLElement ) return selector;
 
-		if ( selector.lastIndexOf( '.' ) > 0 || selector.lastIndexOf( '#' ) > 0 ) {
-			return document.querySelector( selector )
-		} else if ( selector.lastIndexOf('.') === 0 && selector.lastIndexOf( '#' ) < 0 ) {
-			return document.getElementsByClassName( selector.substr( 1 ) )[0]
-		} else if ( selector.lastIndexOf( '#' ) === 0 && selector.lastIndexOf( '.' ) < 0 ) {
-			return document.getElementById( selector.substr( 1 ) )
-		} else if ( selector.lastIndexOf( '.' ) < 0 && selector.lastIndexOf( '#' ) < 0 ) {
-			return document.getElementsByTagName( selector )[0]
+		if ( !!selector && typeof selector === 'string') {
+			if ( selector.lastIndexOf( '.' ) > 0 || selector.lastIndexOf( '#' ) > 0 ) {
+				selector.includes( '##' ) ? selector = selector.replace( '##', '#' ) : null;
+				return document.querySelector( selector )
+			} else if ( selector.lastIndexOf('.') === 0 && selector.lastIndexOf( '#' ) < 0 ) {
+				return document.getElementsByClassName( selector.substr( 1 ) )[0]
+			} else if ( selector.lastIndexOf( '#' ) === 0 && selector.lastIndexOf( '.' ) < 0 ) {
+				return document.getElementById( selector.substr( 1 ) )
+			} else if ( selector.lastIndexOf( '.' ) < 0 && selector.lastIndexOf( '#' ) < 0 ) {
+				return document.getElementsByTagName( selector )[0]
+			}
 		}
 	};
 
 	var getEndLocation = function ( anchor ) {
-		var anchorElem = typeof anchor === 'string' ? getElem( anchor ) : getElem( anchor.hash );
+		var anchorElem = typeof anchor === 'string' ? getElem( anchor ) : anchor;
 		var location = 0;
 		if ( anchorElem && anchorElem.offsetParent ) {
 			do {
@@ -117,10 +121,18 @@
 		return location;
 	};
 
-	var getAnchors = function ( links ) {
+	var getAnchors = function ( links, backToTop ) {
 		for (let i = 0; i < links.length; i++) {
 			const link = links[i];
-			const anchor = getElem( link.hash );
+			let anchor;
+
+			console.log('!link.hash ~>', !link.hash);
+			if (!link.hash && !!backToTop) {
+				anchor = getElem( 'body' );
+			} else {
+				anchor = getElem( link.hash );
+			};
+
 			if ( !!anchor ) anchor.classList.add( 'jvss-anchor' );
 
 			// If the link points to the same base page
@@ -145,15 +157,22 @@
 		// Add event listener to prevent default functionality
 		link.addEventListener( 'click', function ( e ) {
 			var target = anchorLinks.find( function ( anchor ) {
+				if ( !anchor.hash ) return 'body';
+
 				if ( anchor.hash === link.hash ) {
 					return anchor.hash
 				}
 			} ),
-				elem = getElem( target.hash );
 
-			elem.focus();
+			elem = getElem( target );
+			!!elem ? elem.focus() : null;
 			e.preventDefault();
-			scrollStart( target.hash );
+
+			// console.log( 'link clicked\nlink ~>', link );
+			// console.log( 'e ~>', e );
+			// console.log( 'target ~>', target );
+
+			scrollStart( target );
 		} );
 	};
 
@@ -211,6 +230,8 @@
 	function JVSmoothScroll( opts ) {
 
 		opts = !!opts ? opts : defaultOptions
+
+		if ( opts.backToTop ) { opts.selector = opts.selector + ', .back-to-top' }
 		// Overwrite defaults
 		options = merge( defaultOptions, opts );
 
@@ -227,8 +248,14 @@
 
 
 		links = document.querySelectorAll( '' + options.container + ' ' + options.selector );
+		if ( options.backToTop ) {
+			console.log('links ~>', links);
+			// links.length > 1 ? links.push( document.querySelector('.back-to-top') ) : null;
+		}
 
-		if ( !!links ) getAnchors( links );
+		if ( !!links ) {
+			!!options.backToTop ? getAnchors( links, true ) : getAnchors( links, false );
+		}
 	}
 
 	// * On Window Load
@@ -239,9 +266,9 @@
 			link.hash === hash
 		} );
 		if ( anchor ) {
+			console.log('anchor ~>', anchor);
 			// Check for special occasions noted by team
-			anchor.hash.includes( '#!' ) ? anchor.hash = anchor.hash.replace( '#!', '' ) : anchor.hash;
-			anchor.hash.includes( '%23' ) ? anchor.hash = anchor.hash.replace( '%23', '#' ) : anchor.hash;
+			anchor.hash.includes( '##' ) ? anchor.hash = anchor.hash.replace( '##', '#') : anchor.hash.includes( '#!' ) ? anchor.hash = anchor.hash.replace( '#!', '' ) : anchor.hash.includes( '%23' ) ? anchor.hash = anchor.hash.replace( '%23', '#' ) : anchor.hash;
 			// Wait for client side to catch up, then scroll to target
 			if ( document.body.scrollTop <= 0 ) {
 				setTimeout( function () {
