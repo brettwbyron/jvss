@@ -25,6 +25,21 @@
 		};
 	}
 
+	// String.prototype.includes polyfill
+	if ( !String.prototype.includes ) {
+		String.prototype.includes = function ( search, start ) {
+			'use strict';
+
+			if ( search instanceof RegExp ) {
+				throw TypeError( 'first argument must not be a RegExp' );
+			}
+			if ( start === undefined ) {
+				start = 0;
+			}
+			return this.indexOf( search, start ) !== -1;
+		};
+	}
+
 	var anchorLinks = [];
 	var defaultOptions = {
 		container: 'html',
@@ -120,11 +135,18 @@
 	var getAnchors = function ( links ) {
 		for (let i = 0; i < links.length; i++) {
 			const link = links[i];
+			link.classList.add( 'jvss-anchor-link' );
 			const anchor = getElem( link.hash );
+
 			if ( !!anchor ) anchor.classList.add( 'jvss-anchor' );
 
 			// If the link points to the same base page
-			if ( location.pathname.replace( /^\//, '' ) == link.pathname.replace( /^\//, '' ) && location.hostname == link.hostname ) {
+			let location_pathname = location.pathname.replace( /^\//, '' ),
+				location_hostname = location.hostname,
+				link_pathname = link.pathname.replace( /^\//, '' ),
+				link_hostname = link.hostname;
+
+			if ( location_pathname == link_pathname && location_hostname == link_hostname ) {
 				var anchorTop = getEndLocation( link.hash );
 				var distance = getDistance( link.hash );
 
@@ -140,20 +162,25 @@
 	}
 
 	var addListeners = function ( link ) {
-		link.classList.add( 'jvss-anchor-link' );
-
 		// Add event listener to prevent default functionality
 		link.addEventListener( 'click', function ( e ) {
-			var target = anchorLinks.find( function ( anchor ) {
-				if ( anchor.hash === link.hash ) {
-					return anchor.hash
-				}
-			} ),
-				elem = getElem( target.hash );
-
-			elem.focus();
 			e.preventDefault();
-			scrollStart( target.hash );
+
+			var target =
+				anchorLinks.find( function ( anchor ) {
+					if ( anchor.hash === link.hash ) {
+						return anchor.hash
+					}
+				} );
+
+			if ( !target || target === "#" ) {
+				return;
+			} else {
+				var elem = getElem( target.hash );
+
+				elem.focus();
+				scrollStart( target.hash );
+			}
 		} );
 	};
 
@@ -167,15 +194,15 @@
 	var scrollStart = function ( hash ) {
 		var distance = getDistance( hash );
 
-		// if ( 'scrollBehavior' in document.documentElement.style ) { //Checks if browser supports scroll function
-		// 	window.scrollBy( {
-		// 		top: distance,
-		// 		behavior: 'smooth',
-		// 		block: 'start'
-		// 	} );
-		// } else {
+		if ( 'scrollBehavior' in document.documentElement.style ) { //Checks if browser supports scroll function
+			window.scrollBy( {
+				top: distance,
+				behavior: 'smooth',
+				block: 'start'
+			} );
+		} else {
 			smoothScrollTo( getEndLocation( hash ), options.animation.duration, document.querySelector( 'html' ).scrollTop ); //polyfill below
-		// }
+		}
 
 		scrollStop();
 	};
@@ -194,9 +221,11 @@
 		var timer = window.setInterval( function () {
 			var time = new Date().getTime() - startTime,
 				newY = easeInOut( time, startY, distanceY, duration );
-			if ( time >= duration || newY >= endY ) {
+
+			if ( time >= duration ) {
 				window.clearInterval( timer );
 			}
+
 			window.scrollTo( 0, newY );
 		}, 1000 / 60 ); // 60 fps
 	};
