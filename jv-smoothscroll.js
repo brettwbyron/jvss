@@ -164,7 +164,11 @@
 	var addListeners = function ( link ) {
 		// Add event listener to prevent default functionality
 		link.addEventListener( 'click', function ( e ) {
-			e.preventDefault();
+			if ( link.hash.includes( '/' ) ) {
+				return;
+			} else {
+				e.preventDefault();
+			}
 
 			var target =
 				anchorLinks.find( function ( anchor ) {
