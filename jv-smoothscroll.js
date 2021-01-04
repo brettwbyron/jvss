@@ -90,11 +90,23 @@
 		obj1 = !!obj1 ? obj1 : {};
 		obj2 = !!obj2 ? obj2 : {};
 		Object.keys( obj1 ).forEach( function( propertyName ) {
-			obj3[ propertyName ] = obj1[ propertyName ];
+			if ( typeof obj3[ propertyName ] == "object" ) {
+				Object.keys( obj3[propertyName] ).forEach( function( prop ) {
+					!!obj3[ propertyName ][ prop ] ? obj3[ propertyName ][ prop ] = obj1[ propertyName ][ prop ] : undefined;
+				} )
+			} else {
+				obj3[ propertyName ] = obj1[ propertyName ];
+			}
 		} );
 
 		Object.keys( obj2 ).forEach( function( propertyName ) {
-			obj3[ propertyName ] = obj2[ propertyName ];
+			if ( typeof obj3[ propertyName ] == "object" ) {
+				Object.keys( obj3[ propertyName ] ).forEach( function ( prop ) {
+					!!obj3[ propertyName ][ prop ] ? obj3[ propertyName ][ prop ] = obj2[ propertyName ][ prop ] : undefined;
+				} )
+			} else {
+				obj3[ propertyName ] = obj2[ propertyName ];
+			}
 		} );
 		return obj3;
 	};
@@ -146,7 +158,7 @@
 				link_pathname = link.pathname.replace( /^\//, '' ),
 				link_hostname = link.hostname;
 
-			if ( location_pathname == link_pathname && location_hostname == link_hostname ) {
+			if ( ( link_pathname.replace( '/jobs', '' ) == location_pathname.replace( '/jobs', '' ) ) && location_hostname == link_hostname ) {
 				var anchorTop = getEndLocation( link.hash );
 				var distance = getDistance( link.hash );
 
@@ -164,7 +176,7 @@
 	var addListeners = function ( link ) {
 		// Add event listener to prevent default functionality
 		link.addEventListener( 'click', function ( e ) {
-			if ( link.hash.includes( '/' ) ) {
+			if ( link.hash.includes( '/' ) || link.hash === "#nav" || link.hash.includes( '##' ) ) {
 				return;
 			} else {
 				e.preventDefault();
@@ -177,7 +189,7 @@
 					}
 				} );
 
-			if ( !target || target === "#" ) {
+			if ( !target || target === "#" || target.hash === "#nav" ) {
 				return;
 			} else {
 				var elem = getElem( target.hash );
@@ -198,7 +210,9 @@
 	var scrollStart = function ( hash ) {
 		var distance = getDistance( hash );
 
-		if ( 'scrollBehavior' in document.documentElement.style ) { //Checks if browser supports scroll function
+		if ( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test( navigator.userAgent ) ) {
+			smoothScrollTo( getEndLocation( hash ), options.animation.duration, document.querySelector( 'html' ).scrollTop ); //polyfill below
+		} else if ( 'scrollBehavior' in document.documentElement.style ) { //Checks if browser supports scroll function
 			window.scrollBy( {
 				top: distance,
 				behavior: 'smooth',
@@ -235,7 +249,7 @@
 	};
 
 	var scrollStop = function () {
-		options.animation.callback();
+		!!options.animation.callback ? options.animation.callback() : function() {};
 		anchorLinks = [];
 		getAnchors( links );
 	};
@@ -252,12 +266,11 @@
 			elem: !!options.header.selector ? getElem( 'header' ) : getElem( 'header' ),
 			fixed: !!options.header.fixed ? options.header.fixed : defaultOptions.header.fixed,
 			selector: !!options.header.selector ? options.header.selector : defaultOptions.header.selector,
-			height: !!options.header.fixed ? !!parseInt( options.header.height ) ? options.header.height : !!options.header.selector ? getHeight( getElem( options.header.selector ) ) : getHeight( getElem( 'header' ) ) : 0,
+			height: !!options.header.fixed ? !!options.header.height ? options.header.height : !!options.header.selector ? getHeight( getElem( options.header.selector ) ) : getHeight( getElem( 'header' ) ) : 0,
 			offset: !!options.header.offset ? options.header.offset : defaultOptions.header.offset
 		};
 
-		options.header = merge( opts.header, header );
-
+		options.header = merge( header, opts.header );
 
 		links = document.querySelectorAll( '' + options.container + ' ' + options.selector );
 
