@@ -1,3 +1,25 @@
+/*
+	JV Smooth Scroll ( JVSS )
+	A vanilla JS library for smooth scrolling anchor links.
+
+	var jvss = JVSmoothScroll( {
+		container: 'html',
+		selector: 'a[href*="#"]:not([href="#"])',
+		animation: {
+			tolerance: 0,
+			duration: 800,
+			easing: 'easeInOut', // 'easeIn', 'easeOut', 'easeInOut'
+			callback: function () {},
+		},
+		header: {
+			fixed: false,
+			height: 0,
+			selector: 'header',
+			offset: 0
+		},
+		offset: 0
+	} );
+*/
 ( function () {
 	'use strict';
 
