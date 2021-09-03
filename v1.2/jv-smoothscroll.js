@@ -1,5 +1,5 @@
 /*
-	JV Smooth Scroll ( JVSS )
+	JV Smooth Scroll ( JVSS ) v1.2
 	A vanilla JS library for smooth scrolling anchor links.
 
 	var jvss = JVSmoothScroll( {
@@ -14,10 +14,11 @@
 		header: {
 			fixed: false,
 			height: 0,
-			selector: 'header',
-			offset: 0
+			selector: 'header'
 		},
-		offset: 0
+		offset: 0,
+		ignoreNg: false,
+		ngSelector: 'a[ng-href*="#"]:not([ng-href="#"])'
 	} );
 */
 ( function () {
@@ -65,7 +66,7 @@
 	var anchorLinks = [];
 	var defaultOptions = {
 		container: 'html',
-		selector: 'a[href*="#"]:not([href="#"]):not([ng-href*="#"]):not([ng-href="#"])',
+		selector: 'a[href*="#"]:not([href="#"])',
 		animation: {
 			tolerance: 0,
 			duration: 800,
@@ -75,10 +76,11 @@
 		header: {
 			fixed: false,
 			height: 0,
-			selector: 'header',
-			offset: 0
+			selector: 'header'
 		},
-		offset: 0
+		offset: 0,
+		ignoreNg: false,
+		ngSelector: 'a[ng-href*="#"]:not([ng-href="#"])'
 	};
 	var links, options, containerElem;
 	var browser = [ 'ms', 'moz', 'webkit', 'o' ];
@@ -288,11 +290,14 @@
 			elem: !!options.header.selector ? getElem( 'header' ) : getElem( 'header' ),
 			fixed: !!options.header.fixed ? options.header.fixed : defaultOptions.header.fixed,
 			selector: !!options.header.selector ? options.header.selector : defaultOptions.header.selector,
-			height: !!options.header.fixed ? !!options.header.height ? options.header.height : !!options.header.selector ? getHeight( getElem( options.header.selector ) ) : getHeight( getElem( 'header' ) ) : 0,
-			offset: !!options.header.offset ? options.header.offset : defaultOptions.header.offset
+			height: !!options.header.fixed ? !!options.header.height ? options.header.height : !!options.header.selector ? getHeight( getElem( options.header.selector ) ) : getHeight( getElem( 'header' ) ) : 0
 		};
 
 		options.header = merge( header, opts.header );
+
+		if ( options.ignoreNg ) {
+			options.selector = options.selector + ',' + options.ngSelector;
+		}
 
 		links = document.querySelectorAll( '' + options.container + ' ' + options.selector );
 
