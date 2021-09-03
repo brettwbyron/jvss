@@ -279,7 +279,7 @@
 	};
 
 	// * JVSmoothScroll constructor * //
-	function JVSmoothScroll( opts ) {
+	function JVSmoothScroll( opts=false ) {
 
 		opts = !!opts ? opts : defaultOptions
 		// Overwrite defaults
