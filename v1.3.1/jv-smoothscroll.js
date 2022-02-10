@@ -259,12 +259,14 @@
 		var startY = startY ? startY : 0,
 			distanceY = endY - startY,
 			startTime = new Date().getTime(),
-			duration = duration ? duration : options.animation.duration;
+			duration = duration ? duration : options.animation.duration,
+			easing = options.animation.easing;
 
 		// Easing function
 		var timer = window.setInterval( function () {
 			var time = new Date().getTime() - startTime,
-				newY = easeInOut( time, startY, distanceY, duration );
+				newY = easing( time, startY, distanceY, duration );
+				// newY = easeInOut( time, startY, distanceY, duration );
 
 			if ( time >= duration ) {
 				window.clearInterval( timer );
